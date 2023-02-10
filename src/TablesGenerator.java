@@ -1,20 +1,33 @@
 import java.util.*;
 
 public class TablesGenerator {
+    private static List<Character> neterminale = new ArrayList<>();
 
-    public static List<Character> neterminale = new ArrayList<>();
-    public static List<Character> terminale = new ArrayList<>();
-    public static Map<String, ArrayList<String>> productii = new LinkedHashMap<String, ArrayList<String>>();
-    public static String start = null;
-    public static HashMap<String, ArrayList<String>> caracterePRIM = new LinkedHashMap<>();
-    public static HashMap<String, ArrayList<String>> caractereURM = new LinkedHashMap<>();
-    public static HashMap<String, ArrayList<String>> multimeDeStari = new LinkedHashMap<>();
-    public static HashMap<String, ArrayList<String>> salturi = new LinkedHashMap<>();
+    private static List<Character> terminale = new ArrayList<>();
+
+    private static LinkedHashMap<String, ArrayList<String>> productii = new LinkedHashMap<>();
+
+    private static String start = null;
+
+    private static HashMap<String, ArrayList<String>> caracterePRIM = new LinkedHashMap<>();
+
+    private static HashMap<String, ArrayList<String>> caractereURM = new LinkedHashMap<>();
+
+    private static HashMap<String, ArrayList<String>> multimeDeStari = new LinkedHashMap<>();
+
+    private static HashMap<String, ArrayList<String>> salturi = new LinkedHashMap<>();
+
     public static String[][] TA;
-    public static String[][] TS;
-    public static int nrI = 0;
 
-    public TablesGenerator(List<Character> neterminale, List<Character> terminale, Map<String, ArrayList<String>> productii, String start) {
+    public static String[][] TS;
+
+    private static int nrI = 0;
+
+    public TablesGenerator(List<Character> neterminale,
+                           List<Character> terminale,
+                           LinkedHashMap<String, ArrayList<String>> productii,
+                           String start) {
+
         this.neterminale = neterminale;
         this.terminale = terminale;
         this.productii = productii;
@@ -42,25 +55,29 @@ public class TablesGenerator {
         showTables();
     }
 
-    public static String findKey(String valoare) {
+    private static String findKey(String valoare) {
         for (Map.Entry<String, ArrayList<String>> entry : productii.entrySet()) {
             if (entry.getValue().contains(valoare))
                 return entry.getKey();
         }
+
         return "";
     }
 
-    public static ArrayList<String> getAllValues(String cheie, Map<String, ArrayList<String>> map) {
+    private static ArrayList<String> getAllValues(String cheie, Map<String, ArrayList<String>> map) {
         ArrayList<String> valori = new ArrayList<>();
+
         for (Map.Entry<String, ArrayList<String>> entry : map.entrySet()) {
             if (entry.getKey().equals(cheie))
                 valori = entry.getValue();
         }
+
         return valori;
     }
 
-    public static ArrayList<String> findLast(String cheie, ArrayList<String> last) {
+    private static ArrayList<String> findLast(String cheie, ArrayList<String> last) {
         ArrayList<String> valori = getAllValues(cheie, productii);
+
         for (String valoare : valori) {
             if (Character.isUpperCase(valoare.charAt(valoare.length() - 1))) {
                 findLast(valoare, last);
@@ -68,28 +85,31 @@ public class TablesGenerator {
                 last.add(String.valueOf(valoare.charAt(0)));
             }
         }
+
         return last;
     }
 
-    public static ArrayList<String> findURM(String cheie, ArrayList<String> urm) {
+    private static ArrayList<String> findURM(String cheie, ArrayList<String> urm) {
         for (Map.Entry<String, ArrayList<String>> entry : productii.entrySet()) {
             String cheie2 = entry.getKey();
             ArrayList<String> valori = entry.getValue();
 
             for (String valoare : valori) {
                 if (valoare.contains(cheie) && valoare.length() > 1 && valoare.indexOf(cheie) + 1 < valoare.length()) {
-                    if (terminale.contains(valoare.charAt(valoare.indexOf(cheie) + 1))) {
-                        urm.add(String.valueOf(valoare.charAt(valoare.indexOf(cheie) + 1)));
+                    char nextTerminal = valoare.charAt(valoare.indexOf(cheie) + 1);
+                    if (terminale.contains(nextTerminal)) {
+                        urm.add(String.valueOf(nextTerminal));
                     }
                 } else if (valoare.equals(cheie) && !cheie.equals(cheie2)) {
                     urm.addAll(caractereURM.get(cheie2));
                 }
             }
         }
+
         return urm;
     }
 
-    public static void PRIM() {
+    private static void PRIM() {
         Set<String> chei = productii.keySet();
 
         for (String cheie : chei) {
@@ -101,7 +121,7 @@ public class TablesGenerator {
         }
     }
 
-    public static void URM() {
+    private static void URM() {
         Set<String> chei = productii.keySet();
 
         for (String cheie : chei) {
@@ -116,7 +136,7 @@ public class TablesGenerator {
         }
     }
 
-    public static void SALT(String cheie, String simbol, int indexI) {
+    private static void SALT(String cheie, String simbol, int indexI) {
         ArrayList<String> valori = getAllValues(cheie, multimeDeStari);
         HashMap<String, ArrayList<String>> productiiModificate = new HashMap<>();
         ArrayList<String> productiiModificate2 = new ArrayList<>();
@@ -127,17 +147,15 @@ public class TablesGenerator {
         String cheieEgal = "";
 
         for (String valoare : valori) {
-            if (ok == 1) {
-                break;
-            }
-            ok = 0;
             char[] valoareChar = valoare.toCharArray();
+
             for (int i = 0; i < valoareChar.length; i++) {
                 if (valoareChar[i] == '.') {
                     if (i + 1 < valoareChar.length && valoareChar[i + 1] == simbol.charAt(0)) {
                         valoareChar[i] = simbol.charAt(0);
                         valoareChar[i + 1] = '.';
                         productiiModificate.get("I" + nrI).add(String.valueOf(valoareChar));
+
                         if (valoareChar.length > i + 2) {
                             if (neterminale.contains(valoareChar[i + 2])) {
                                 ok = 1;
@@ -149,8 +167,9 @@ public class TablesGenerator {
                 }
             }
         }
+
         if (productiiModificate.isEmpty()) {
-            System.out.println("Eoare in salt");
+            System.out.println("Eroare in salt");
             return;
         }
 
@@ -158,9 +177,11 @@ public class TablesGenerator {
             if (!checkIfContainsFirst("I" + nrI, productiiModificate, indexI, simbol)) {
                 multimeDeStari.putAll(productiiModificate);
                 temp.putAll(productiiModificate);
+
                 if(!salturi.containsKey(nrI + "")){
                     salturi.put(nrI + "", new ArrayList<>());
                 }
+
                 salturi.get(nrI + "").add("" + indexI + simbol);
             } else {
                 nrI--;
@@ -176,9 +197,11 @@ public class TablesGenerator {
 
             if (!checkIfSame("I" + nrI, productiiModificate, indexI, cheieEgal)) {
                 temp.get("I" + nrI).addAll(productiiModificate2);
+
                 if(!salturi.containsKey(nrI + "")){
                     salturi.put(nrI + "", new ArrayList<>());
                 }
+
                 salturi.get(nrI + "").add("" + indexI + simbol);
             } else {
                 nrI--;
@@ -186,7 +209,7 @@ public class TablesGenerator {
         }
     }
 
-    public static boolean checkIfSame(String cheie, HashMap<String, ArrayList<String>> productiiModificate, int indexI, String simbol) {
+    private static boolean checkIfSame(String cheie, HashMap<String, ArrayList<String>> productiiModificate, int indexI, String simbol) {
         ArrayList<String> valoriModificate = getAllValues(cheie, productiiModificate);
         Set<String> chei = multimeDeStari.keySet();
 
@@ -194,13 +217,15 @@ public class TablesGenerator {
             ArrayList<String> valori = getAllValues(cheie2, multimeDeStari);
             if (valoriModificate.equals(valori)) {
                 salturi.get(cheie2.charAt(1) + "").add("" + indexI + simbol);
+
                 return true;
             }
         }
+
         return false;
     }
 
-    public static boolean checkIfContainsFirst(String cheie, HashMap<String, ArrayList<String>> productiiModificate, int indexI, String simbol) {
+    private static boolean checkIfContainsFirst(String cheie, HashMap<String, ArrayList<String>> productiiModificate, int indexI, String simbol) {
         String valMod = productiiModificate.get(cheie).get(0);
         String val = "";
         Set<String> chei = multimeDeStari.keySet();
@@ -209,13 +234,15 @@ public class TablesGenerator {
             val = multimeDeStari.get(cheie2).get(0);
             if (valMod.equals(val)) {
                 salturi.get(cheie2.charAt(1) + "").add("" + indexI + simbol);
+
                 return true;
             }
         }
+
         return false;
     }
 
-    public static void INC(String cheie, ArrayList<String> productiiModificate, String cheieStare) {
+    private static void INC(String cheie, ArrayList<String> productiiModificate, String cheieStare) {
         ArrayList<String> valori = getAllValues(cheieStare, multimeDeStari);
         ArrayList<String> valoriNoi = new ArrayList<>();
 
@@ -227,14 +254,18 @@ public class TablesGenerator {
                             for (String val : getAllValues(cheie, productii)) {
                                 valoriNoi.add("." + val);
                             }
+
                             productiiModificate.addAll(valoriNoi);
+
                             return;
                         } else if (!productiiModificate.contains(valoareNoua)) {
                             valoriNoi.add("." + valoareNoua);
+
                             if (!(valoareNoua.charAt(valoareNoua.indexOf('.') + 1) == cheie.charAt(cheie.length() - 1))) {
                                 productiiModificate.addAll(valoriNoi);
 
                                 INC(valoareNoua.charAt(valoareNoua.indexOf('.') + 1) + "", productiiModificate, cheieStare);
+
                                 return;
                             }
                         }
@@ -245,30 +276,36 @@ public class TablesGenerator {
         }
     }
 
-    public static void colectie() {
+    private static void colectie() {
         Set<String> chei = multimeDeStari.keySet();
+
         for (int i = 0; i < chei.size(); i++) {
             ArrayList<String> valori = getAllValues("I" + i, multimeDeStari);
             ArrayList<String> cheiFolosite = new ArrayList<>();
+
             for (String valoare : valori) {
                 if (valoare.contains(".")) {
                     if (valoare.indexOf('.') + 1 < valoare.length()) {
-                        if (!cheiFolosite.contains(valoare.charAt(valoare.indexOf('.') + 1) + "")) {
+                        String cheie = valoare.charAt(valoare.indexOf('.') + 1) + "";
+                        
+                        if (!cheiFolosite.contains(cheie)){
                             if (!salturi.containsKey(nrI + "")) {
                                 salturi.put(nrI + "", new ArrayList<>());
                             }
-                            SALT("I" + i, valoare.charAt(valoare.indexOf('.') + 1) + "", i);
+
+                            SALT("I" + i, cheie, i);
                             salturi.get(nrI + "").add("" + i + valoare.charAt(valoare.indexOf('.') + 1));
                             nrI++;
                         }
-                        cheiFolosite.add(valoare.charAt(valoare.indexOf('.') + 1) + "");
+
+                        cheiFolosite.add(cheie);
                     }
                 }
             }
         }
     }
 
-    public static void initTables() {
+    private static void initTables() {
         Set<String> chei = multimeDeStari.keySet();
 
         TA = new String[chei.size() + 1][terminale.size() + 1];
@@ -313,17 +350,18 @@ public class TablesGenerator {
         }
     }
 
-    public static void constructieTabele() {
+    private static void constructieTabele() {
         Set<String> chei = multimeDeStari.keySet();
-        initTables();
         String indexSalt = null;
+
+        initTables();
 
         for (int i = 0; i < chei.size(); i++) {
             ArrayList<String> valori = getAllValues("I" + i, multimeDeStari);
+
             for (String valoare : valori) {
                 if (valoare.contains(".")) {
                     if (valoare.indexOf('.') + 1 < valoare.length()) {
-
                         indexSalt = findSalt("" + i + valoare.charAt(valoare.indexOf('.') + 1));
 
                         if (neterminale.contains(valoare.charAt(valoare.indexOf('.') + 1))) {
@@ -331,27 +369,14 @@ public class TablesGenerator {
                         } else if (terminale.contains(valoare.charAt(valoare.indexOf('.') + 1))) {
                             TA[i + 1][terminale.indexOf(valoare.charAt(valoare.indexOf('.') + 1))] = "d" + indexSalt;
                         }
+
                     } else if (valoare.indexOf('.') == valoare.length() - 1) {
                         if (valoare.charAt(valoare.indexOf('.') - 1) == start.charAt(0)) {
                             TA[i + 1][terminale.size()] = "acc";
                         } else if (neterminale.contains(valoare.charAt(valoare.indexOf('.') - 1))) {
-                            String vallueWithoutDot = valoare.substring(0, valoare.indexOf("."));
-                            for (int j = 0; j < caractereURM.get(findKey(vallueWithoutDot)).size(); j++) {
-                                for (int k = 0; k < terminale.size() + 1; k++) {
-                                    if (caractereURM.get(findKey(vallueWithoutDot)).contains(TA[0][k])) {
-                                        TA[i + 1][k] = "r" + findIndexProduction(valoare);
-                                    }
-                                }
-                            }
+                            addReductionToTA(valoare, i);
                         } else if (terminale.contains(valoare.charAt(valoare.indexOf('.') - 1))){
-                            String vallueWithoutDot = valoare.substring(0, valoare.indexOf("."));
-                            for (int j = 0; j < caractereURM.get(findKey(vallueWithoutDot)).size(); j++) {
-                                for (int k = 0; k < terminale.size() + 1; k++) {
-                                    if (caractereURM.get(findKey(vallueWithoutDot)).contains(TA[0][k])) {
-                                        TA[i + 1][k] = "r" + findIndexProduction(valoare);
-                                    }
-                                }
-                            }
+                            addReductionToTA(valoare, i);
                         }
                     }
                 }
@@ -359,7 +384,19 @@ public class TablesGenerator {
         }
     }
 
-    public static String findSalt(String valoare) {
+    private static void addReductionToTA(String valoare, int i){
+        String vallueWithoutDot = valoare.substring(0, valoare.indexOf("."));
+
+        for (int j = 0; j < caractereURM.get(findKey(vallueWithoutDot)).size(); j++) {
+            for (int k = 0; k < terminale.size() + 1; k++) {
+                if (caractereURM.get(findKey(vallueWithoutDot)).contains(TA[0][k])) {
+                    TA[i + 1][k] = "r" + findIndexProduction(valoare);
+                }
+            }
+        }
+    }
+
+    private static String findSalt(String valoare) {
         Set<String> chei = salturi.keySet();
 
         for (String cheie : chei) {
@@ -367,10 +404,11 @@ public class TablesGenerator {
                 return cheie;
             }
         }
+
         return "";
     }
 
-    public static int findIndexProduction(String valoare) {
+    private static int findIndexProduction(String valoare) {
         int counter = 1;
         String valoareFaraPunct = valoare.substring(0, valoare.indexOf("."));
 
@@ -382,10 +420,11 @@ public class TablesGenerator {
                 counter++;
             }
         }
+
         return 0;
     }
 
-    public static String[][] combineTables(){
+    public String[][] combineTables(){
         String[][] matrix = new String[TA.length][neterminale.size()+terminale.size()+1];
 
         for(int i=0;i<TA.length;i++){
