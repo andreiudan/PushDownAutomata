@@ -3,11 +3,11 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 public class Main {
-    public static List<Character> neterminale = new ArrayList<>();
+    public static List<Character> nonterminals = new ArrayList<>();
 
-    public static List<Character> terminale = new ArrayList<>();
+    public static List<Character> terminals = new ArrayList<>();
 
-    public static LinkedHashMap<String, ArrayList<String>> productii = new LinkedHashMap<>();
+    public static LinkedHashMap<String, ArrayList<String>> productions = new LinkedHashMap<>();
 
     public static String start = null;
 
@@ -17,7 +17,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        File input = new File("inputFile");
+        File input = new File("inputProductions");
         Scanner scan = null;
         try {
             scan = new Scanner(input).useDelimiter("}");
@@ -28,13 +28,13 @@ public class Main {
         ProductionsReader productionsReader = new ProductionsReader();
 
         while (scan.hasNext()) {
-            String[] sirCitit = scan.next().split("=");
-            sirCitit[0] = sirCitit[0].replaceAll("\\s+", "");
-            switch (sirCitit[0]) {
-                case "P" -> productii = productionsReader.readProductions(sirCitit);
-                case "N" -> neterminale = productionsReader.readNonterminals(sirCitit);
-                case "T" -> terminale = productionsReader.readTerminals(sirCitit);
-                case "S" -> start = sirCitit[1].substring(sirCitit[1].indexOf("{") + 1);
+            String[] scanned = scan.next().split("=");
+            scanned[0] = scanned[0].replaceAll("\\s+", "");
+            switch (scanned[0]) {
+                case "P" -> productions = productionsReader.readProductions(scanned);
+                case "N" -> nonterminals = productionsReader.readNonterminals(scanned);
+                case "T" -> terminals = productionsReader.readTerminals(scanned);
+                case "S" -> start = scanned[1].substring(scanned[1].indexOf("{") + 1);
                 default -> System.out.println("No match");
             }
         }
@@ -42,52 +42,52 @@ public class Main {
         scan.close();
 
         System.out.println("-----------------------Productions---------------------------");
-        for (Map.Entry<String, ArrayList<String>> entry : productii.entrySet()) {
-            String cheie = entry.getKey();
-            ArrayList<String> valori = entry.getValue();
+        for (Map.Entry<String, ArrayList<String>> entry : productions.entrySet()) {
+            String key = entry.getKey();
+            ArrayList<String> value = entry.getValue();
 
-            System.out.println("Key = " + cheie);
-            System.out.println("Values = " + valori);
+            System.out.println("Key = " + key);
+            System.out.println("Values = " + value);
         }
 
         System.out.println("-----------------------------------------------------------");
-        System.out.println("Neterminale: " + neterminale);
-        System.out.println("Terminale: " + terminale);
+        System.out.println("Nonterminals: " + nonterminals);
+        System.out.println("Terminals: " + terminals);
         System.out.println("Start: " + start);
 
-        TablesGenerator tablesGenerator = new TablesGenerator(neterminale, terminale, productii, start);
+        TablesGenerator tablesGenerator = new TablesGenerator(nonterminals, terminals, productions, start);
         tablesGenerator.generateTables();
 
         String[][] matrix = tablesGenerator.combineTables();
 
-        File inputSir = new File("inputSir");
-        Scanner sc = null;
+        File inputSir = new File("inputEntryString");
+        Scanner scanner = null;
         try {
-            sc = new Scanner(inputSir);
+            scanner = new Scanner(inputSir);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
 
-        String[] sirIntrare = sc.nextLine().split("");
-        sc.close();
+        String[] scanned = scanner.nextLine().split("");
+        scanner.close();
 
         ArrayList<String> sir = new ArrayList<>();
-        Collections.addAll(sir, sirIntrare);
+        Collections.addAll(sir, scanned);
 
         System.out.println("-----------------------------------------------------------");
 
-        System.out.println("Sir de intrare: " + sir);
+        System.out.println("Entry string: " + sir);
 
-        Stack myStack = new Stack();
-        myStack.push("$");
-        myStack.push(0);
+        Stack PDAStack = new Stack();
+        PDAStack.push("$");
+        PDAStack.push(0);
 
         int i;
-        String litera;
-        String numar;
+        String letter;
+        String numberAsString;
 
         System.out.println("-----------------------------------------------------------");
-        System.out.println(myStack);
+        System.out.println(PDAStack);
 
         label:
         while (sir.size() != 0) {
@@ -97,100 +97,101 @@ public class Main {
                 }
             }
 
-            litera = matrix[(Integer.parseInt(myStack.peek().toString())) + 1][i].substring(0,1);
-            numar = matrix[(Integer.parseInt(myStack.peek().toString())) + 1][i].substring(1);
+            letter = matrix[(Integer.parseInt(PDAStack.peek().toString())) + 1][i].substring(0,1);
+            numberAsString = matrix[(Integer.parseInt(PDAStack.peek().toString())) + 1][i].substring(1);
 
-            switch (litera) {
+            switch (letter) {
                 case "d":
 
                     if (sir.get(0).equals("a")) {
-                        myStack.push(sir.get(0) + sir.get(1));
+                        PDAStack.push(sir.get(0) + sir.get(1));
                         sir.remove(1);
                         sir.remove(0);
                     } else {
-                        myStack.push(sir.get(0));
+                        PDAStack.push(sir.get(0));
                         sir.remove(0);
                     }
 
-                    myStack.push(numar);
-                    System.out.println("Sir de intrare: " + sir);
-                    System.out.println("Stiva: " + myStack + "\n");
+                    PDAStack.push(numberAsString);
+
+                    System.out.println("Entry string: " + sir);
+                    System.out.println("Stack: " + PDAStack + "\n");
 
                     break;
                 case "r":
 
-                    int valoareTS = 0;
-                    int red = Integer.parseInt(numar);
-                    String cheie = null;
-                    int lungimeProductie = 0;
+                    int valueInTS = 0;
+                    int number = Integer.parseInt(numberAsString);
+                    String key = null;
+                    int productionLength = 0;
 
-                    for (Map.Entry<String, ArrayList<String>> entry : productii.entrySet()) {
-                        if (entry.getValue().size() < red) {
-                            red = red - entry.getValue().size();
+                    for (Map.Entry<String, ArrayList<String>> entry : productions.entrySet()) {
+                        if (entry.getValue().size() < number) {
+                            number = number - entry.getValue().size();
                         } else {
-                            cheie = entry.getKey();
-                            lungimeProductie = productii.get(cheie).get(red - 1).length();
-                            String productie = productii.get(cheie).get(red - 1).replaceAll("\\s+", "");
+                            key = entry.getKey();
+                            productionLength = productions.get(key).get(number - 1).length();
+                            String production = productions.get(key).get(number - 1).replaceAll("\\s+", "");
 
-                            if (productie.length() > 1 && !(productie.charAt(0) == '(')) {
-                                attributeStack.push(newtemp(productii.get(cheie).get(red - 1)));
+                            if (production.length() > 1 && !(production.charAt(0) == '(')) {
+                                attributeStack.push(newTemp(productions.get(key).get(number - 1)));
                             }
 
                             break;
                         }
                     }
 
-                    for (int j = 0; j < 2 * lungimeProductie; j++) {
-                        myStack.pop();
+                    for (int j = 0; j < 2 * productionLength; j++) {
+                        PDAStack.pop();
 
-                        if (myStack.peek().toString().contains("a")) {
-                            attributeStack.push(myStack.pop());
+                        if (PDAStack.peek().toString().contains("a")) {
+                            attributeStack.push(PDAStack.pop());
                             j++;
                         }
                     }
 
                     for (int j = 0; j < 9; j++) {
-                        if (matrix[0][j].equals(cheie)) {
-                            valoareTS = Integer.parseInt(matrix[Integer.parseInt(myStack.peek().toString()) + 1][j]);
+                        if (matrix[0][j].equals(key)) {
+                            valueInTS = Integer.parseInt(matrix[Integer.parseInt(PDAStack.peek().toString()) + 1][j]);
 
                             break;
                         }
                     }
 
-                    myStack.push(cheie);
-                    myStack.push(valoareTS);
+                    PDAStack.push(key);
+                    PDAStack.push(valueInTS);
 
-                    System.out.println("Sir de intrare: " + sir);
-                    System.out.println("Stiva: " + myStack + "\n");
+                    System.out.println("Entry string: " + sir);
+                    System.out.println("Stack: " + PDAStack + "\n");
 
                     break;
                 case "a":
 
-                    System.out.println("Acceptare: " + myStack);
+                    System.out.println("Accepting: " + PDAStack);
                     break label;
                 default:
 
-                    System.out.println("Sir eronat!");
+                    System.out.println("Error!");
                     break label;
             }
         }
     }
 
-    public static void emit(String s) {
-        System.out.println("Cod generat: " + s);
+    public static void emit(String temporaryCode) {
+        System.out.println("Generated code: " + temporaryCode);
     }
 
-    public static String newtemp(String productie){
+    public static String newTemp(String production){
         temporaryCounter++;
 
         StringBuilder varTemp = new StringBuilder();
 
-        for(int i=productie.length()-1; i>=0; i--){
-            if(neterminale.contains(productie.charAt(i))) {
+        for(int i=production.length()-1; i>=0; i--){
+            if(nonterminals.contains(production.charAt(i))) {
                 varTemp.insert(0, attributeStack.pop().toString());
             }
-            else if (!(productie.charAt(i) == '(' || productie.charAt(i) == ')')) {
-                varTemp.insert(0, productie.charAt(i));
+            else if (!(production.charAt(i) == '(' || production.charAt(i) == ')')) {
+                varTemp.insert(0, production.charAt(i));
             }
         }
 
@@ -198,6 +199,6 @@ public class Main {
 
         emit(varTemp.toString());
 
-        return "t"+temporaryCounter;
+        return "t" + temporaryCounter;
     }
 }

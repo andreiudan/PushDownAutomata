@@ -1,39 +1,39 @@
 import java.util.*;
 
 public class ProductionsReader {
-    public LinkedHashMap<String, ArrayList<String> >readProductions(String[] sirCitit){
+    public LinkedHashMap<String, ArrayList<String>> readProductions(String[] scannedString){
         LinkedHashMap<String, ArrayList<String>> productions = new LinkedHashMap<>();
 
-        String substringEcuatii = sirCitit[1].substring(sirCitit[1].indexOf("{") + 1);
-        String[] productie = substringEcuatii.split(",");
+        String ecuations = scannedString[1].substring(scannedString[1].indexOf("{") + 1);
+        String[] production = ecuations.split(",");
 
-        for (int k = 0; k < productie.length; k++) {
-            productie[k] = productie[k].replaceAll("\\s+", "");
-            String cheie = productie[k].substring(0, productie[k].indexOf("-"));
+        for (int k = 0; k < production.length; k++) {
+            production[k] = production[k].replaceAll("\\s+", "");
+            String key = production[k].substring(0, production[k].indexOf("-"));
 
-            productions.put(cheie, new ArrayList<>());
+            productions.put(key, new ArrayList<>());
 
-            productie[k] = productie[k].substring(productie[k].indexOf(">") + 1);
+            production[k] = production[k].substring(production[k].indexOf(">") + 1);
 
-            if (productie[k].contains("|")) {
-                String[] splitProductie = productie[k].split("\\|");
+            if (production[k].contains("|")) {
+                String[] splitProduction = production[k].split("\\|");
 
-                for (String a : splitProductie) {
-                    productions.get(cheie).add(a);
+                for (String a : splitProduction) {
+                    productions.get(key).add(a);
                 }
 
             } else {
-                productions.get(cheie).add(productie[k]);
+                productions.get(key).add(production[k]);
             }
         }
 
         return productions;
     }
 
-    public List<Character> readNonterminals(String[] sirCitit){
+    public List<Character> readNonterminals(String[] scannedString){
         List<Character> nonterminals = new ArrayList<>();
 
-        String nonterminalsRaw = sirCitit[1].substring(sirCitit[1].indexOf("{") + 1);
+        String nonterminalsRaw = scannedString[1].substring(scannedString[1].indexOf("{") + 1);
 
         for (int i = 0; i < nonterminalsRaw.length(); i++) {
             if (Character.isUpperCase(nonterminalsRaw.charAt(i))) {
@@ -44,10 +44,10 @@ public class ProductionsReader {
         return nonterminals;
     }
 
-    public List<Character> readTerminals(String[] sirCitit){
+    public List<Character> readTerminals(String[] scannedString){
         List<Character> terminals = new ArrayList<>();
 
-        String terminalsRaw = sirCitit[1].substring(sirCitit[1].indexOf("{") + 1);
+        String terminalsRaw = scannedString[1].substring(scannedString[1].indexOf("{") + 1);
 
         for (int i = 0; i < terminalsRaw.length(); i++) {
             if (terminalsRaw.charAt(i) != ',') {
