@@ -4,9 +4,15 @@ import java.util.*;
 
 public class Main {
 
+    public static List<Character> neterminale = new ArrayList<>();
+    public static List<Character> terminale = new ArrayList<>();
+    public static Map<String, ArrayList<String>> productii = new LinkedHashMap<String, ArrayList<String>>();
+
+    public static String[][] TA;
+
+    public static String[][] TS;
     static int temporaryCounter = 0;
     static Stack attributeStack = new Stack();
-    static List<Character> neterminale = new ArrayList<>();
 
     public static void emit(String s) {
         System.out.println("Cod generat: " + s);
@@ -46,8 +52,6 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        Map<String, ArrayList<String>> productii = new LinkedHashMap<String, ArrayList<String>>();
-        String terminale = null;
         String start = null;
 
         while (scan.hasNext()) {
@@ -77,14 +81,19 @@ public class Main {
                     break;
                 case "N":
                     String neterminal = sirCitit[1].substring(sirCitit[1].indexOf("{") + 1);
-                    for(int i=0; i<neterminal.length();i++){
-                        if(Character.isUpperCase(neterminal.charAt(i))){
+                    for (int i = 0; i < neterminal.length(); i++) {
+                        if (Character.isUpperCase(neterminal.charAt(i))) {
                             neterminale.add(neterminal.charAt(i));
                         }
                     }
                     break;
                 case "T":
-                    terminale = sirCitit[1].substring(sirCitit[1].indexOf("{") + 1);
+                    String terminal = sirCitit[1].substring(sirCitit[1].indexOf("{") + 1);
+                    for (int i = 0; i < terminal.length(); i++) {
+                        if (terminal.charAt(i) != ',') {
+                            terminale.add(terminal.charAt(i));
+                        }
+                    }
                     break;
                 case "S":
                     start = sirCitit[1].substring(sirCitit[1].indexOf("{") + 1);
@@ -121,21 +130,10 @@ public class Main {
         System.out.println("Terminale: " + terminale);
         System.out.println("Start: " + start);
 
-        System.out.println("-----------------------------------------------------------");
+        TablesGenerator tablesGenerator = new TablesGenerator(neterminale, terminale, productii, start);
+        tablesGenerator.generateTables();
 
-        String[][] matrix = {{"a", "+", "*", "(", ")", "$", "E", "T", "F"},
-                {"d5", "  ", " ", "d4", "  ", "  ", "1", "2", "3"},
-                {"  ", "d6", " ", " ", " ", "acc", " ", " ", " "},
-                {"  ", "r2", "d7", " ", "r2", "r2", " ", " ", " "},
-                {"  ", "r4", "r4", " ", "r4", "r4", " ", " ", " "},
-                {"d5", "  ", "  ", "d4", "  ", "  ", "8", "2", "3"},
-                {"  ", "r6", "r6", " ", "r6", "r6", " ", " ", " "},
-                {"d5", "  ", "  ", "d4", "  ", "  ", " ", "9", "3"},
-                {"d5", "  ", "  ", "d4", "  ", "  ", " ", " ", "10"},
-                {"  ", "d6", "  ", " ", "d11", "  ", " ", " ", " "},
-                {"  ", "r1", "d7", " ", "r1", "r1", " ", " ", " "},
-                {"  ", "r3", "r3", " ", "r3", "r3", " ", " ", " "},
-                {"  ", "r5", "r5", " ", "r5", "r5", " ", " ", " "},};
+        String[][] matrix = tablesGenerator.combineTables();
 
         File inputMatrice = new File("inputSir");
         Scanner sc = null;
@@ -150,6 +148,8 @@ public class Main {
 
         ArrayList<String> sir = new ArrayList<>();
         Collections.addAll(sir, sirIntrare);
+
+        System.out.println("-----------------------------------------------------------");
 
         System.out.println("Sir de intrare: " + sir);
 
@@ -208,7 +208,6 @@ public class Main {
                         String productie = productii.get(cheie).get(red - 1).replaceAll("\\s+", "");
 
                         if (productie.length() > 1 && !(productie.charAt(0) == '(')) {
-                            System.out.println(productii.get(cheie).get(red-1));
                             attributeStack.push(newtemp(productii.get(cheie).get(red - 1)));
                         }
                         break;
